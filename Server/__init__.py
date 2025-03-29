@@ -1,0 +1,3 @@
+"""
+AutoCAD MCP Server package.
+""" 
