@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="AutoCADMCPBridge.cs" />
+    <Compile Include=".\*.cs" />
     <Compile Include="Commands\*.cs" />
   </ItemGroup>
 

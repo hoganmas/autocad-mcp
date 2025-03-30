@@ -14,6 +14,7 @@ namespace AutoCADMCP.Commands
 {
     public static class ShapeCommandHandler
     {
+        [MCPCommand("DRAW_CIRCLE")]
         public static object DrawCircle(JObject parameters)
         {
             // Get the current document and database

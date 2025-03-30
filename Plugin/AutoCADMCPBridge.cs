@@ -6,46 +6,19 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Text;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Autodesk.AutoCAD.Runtime;
-using Autodesk.AutoCAD.EditorInput;
+
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.Runtime;
 
 using AutoCADMCP.Commands;
 
 namespace AutoCADMCP
 {
-    public class Command
-    {
-        public string Type { get; set; }
-        public JObject Parameters { get; set; }
-    }
-
-    public static class Log
-    {
-        public static void Info(string message)
-        {
-            // Get the current document's editor to display the message
-            Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
-            editor.WriteMessage($"\n[AUTOCAD MCP] INFO: {message}");
-        }
-
-        public static void Warning(string message)
-        {
-            // Get the current document's editor to display the message
-            Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
-            editor.WriteMessage($"\n[AUTOCAD MCP] WARNING: {message}");
-        }
-
-        public static void Error(string message)
-        {
-            // Get the current document's editor to display the message
-            Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
-            editor.WriteMessage($"\n[AUTOCAD MCP] ERROR: {message}");
-        }
-    }
-
     public class AutoCADMCPBridge
     {
         private TcpListener _listener;
@@ -53,8 +26,13 @@ namespace AutoCADMCP
         private const int Port = 6400;
         private bool _isRunning;
         private static readonly object lockObj = new object();
-        private static readonly Dictionary<string, (string commandJson, TaskCompletionSource<string> tcs)> commandQueue = 
-            new Dictionary<string, (string commandJson, TaskCompletionSource<string> tcs)>();
+        private static readonly Dictionary<string, (string commandJson, TaskCompletionSource<string> tcs)> commandQueue = new();
+        private static Dictionary<string, (MethodInfo method, object instance)> commandHandlers = new();
+
+        public AutoCADMCPBridge()
+        {
+            RegisterCommands();
+        }
 
         // The IExtensionApplication interface is optional but useful for initialization
         [CommandMethod("STARTMCP")]
@@ -194,6 +172,26 @@ namespace AutoCADMCP
             }
         }
 
+        private void RegisterCommands()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var types = assembly.GetTypes();
+
+            foreach (var type in types)
+            {
+                var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
+                foreach (var method in methods)
+                {
+                    var attribute = method.GetCustomAttribute<MCPCommandAttribute>();
+                    if (attribute != null)
+                    {
+                        object instance = method.IsStatic ? null : Activator.CreateInstance(type);
+                        commandHandlers[attribute.CommandType] = (method, instance);
+                    }
+                }
+            }
+        }
+
         private static void ProcessCommands(object sender, EventArgs e)
         {
             List<string> processedIds = new();
@@ -317,16 +315,16 @@ namespace AutoCADMCP
                     return JsonConvert.SerializeObject(pingResponse);
                 }
 
-                object result = command.Type switch
+                if (commandHandlers.TryGetValue(command.Type, out var handler))
                 {
-                    "DRAW_CIRCLE" => ShapeCommandHandler.DrawCircle(command.Parameters),
-                    "GET_CURRENT_WORKSPACE" => WorkspaceCommandHandler.GetCurrentWorkspace(),
-                    "SET_CURRENT_WORKSPACE" => WorkspaceCommandHandler.SetCurrentWorkspace(command.Parameters["workspace"].ToString()),
-                    _ => throw new System.Exception($"Unknown command type: {command.Type}")
-                };
-
-                var response = new { status = "success", result };
-                return JsonConvert.SerializeObject(response);
+                    object result = handler.method.Invoke(handler.instance, new[] { command.Parameters });
+                    var response = new { status = "success", result };
+                    return JsonConvert.SerializeObject(response);
+                }
+                else 
+                {
+                    throw new System.Exception($"Unknown command type: {command.Type}");
+                }
             }
             catch (System.Exception ex)
             {

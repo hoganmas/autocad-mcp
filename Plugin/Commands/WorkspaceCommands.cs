@@ -9,7 +9,8 @@ namespace AutoCADMCP.Commands
 {
     public static class WorkspaceCommandHandler
     {
-        public static object GetCurrentWorkspace()
+        [MCPCommand("GET_CURRENT_WORKSPACE")]
+        public static object GetCurrentWorkspace(JObject _)
         {
             try
             {
@@ -40,10 +41,13 @@ namespace AutoCADMCP.Commands
             }
         }
 
-        public static object SetCurrentWorkspace(string workspace)
+        [MCPCommand("SET_CURRENT_WORKSPACE")]
+        public static object SetCurrentWorkspace(JObject parameters)
         {
             try
             {
+                string workspace = parameters["workspace"].ToString();
+
                 // Get the current document
                 Document doc = Application.DocumentManager.MdiActiveDocument;
                 if (doc == null)
