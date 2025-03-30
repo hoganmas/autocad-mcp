@@ -320,6 +320,8 @@ namespace AutoCADMCP
                 object result = command.Type switch
                 {
                     "DRAW_CIRCLE" => ShapeCommandHandler.DrawCircle(command.Parameters),
+                    "GET_CURRENT_WORKSPACE" => WorkspaceCommandHandler.GetCurrentWorkspace(),
+                    "SET_CURRENT_WORKSPACE" => WorkspaceCommandHandler.SetCurrentWorkspace(command.Parameters["workspace"].ToString()),
                     _ => throw new System.Exception($"Unknown command type: {command.Type}")
                 };
 
