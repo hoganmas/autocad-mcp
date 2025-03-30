@@ -14,8 +14,8 @@ namespace AutoCADMCP.Commands
 {
     public static class CommandTemplates
     {        
-        public static object Modify(JObject parameters,
-            Action<BlockTableRecord, Transaction, JObject> modifier,
+        public static object Run(JObject parameters,
+            Func<Document, JObject, object> func,
             Func<bool, string> messageGenerator = null)
         {
             // Get the current document and database
@@ -26,42 +26,98 @@ namespace AutoCADMCP.Commands
             // Lock the document
             using (DocumentLock docLock = doc.LockDocument())
             {
-                // Start a transaction
-                using (Transaction trans = db.TransactionManager.StartTransaction())
+                try
                 {
-                    try
+                    var result = func(doc, parameters);
+
+                    return new
                     {
-                        // Get the current space (model space or paper space)
-                        BlockTable bt = (BlockTable)trans.GetObject(db.BlockTableId, OpenMode.ForRead);
-
-                        // Open the Block table record Model space for write
-                        BlockTableRecord btr = (BlockTableRecord)trans.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
-
-                        modifier(btr, trans, parameters);
-
-                        // Commit the transaction
-                        trans.Commit();
-                        ed.Regen();
-
-                        return new
-                        {
-                            success = true,
-                            message = messageGenerator?.Invoke(true) ?? "Operation completed successfully!",
-                        };
-                    }
-                    catch (System.Exception ex)
+                        success = true,
+                        message = messageGenerator?.Invoke(true) ?? "Operation completed successfully!",
+                        result = result
+                    };
+                }
+                catch (System.Exception ex)
+                {
+                    return new
                     {
-                        trans.Abort();
-
-                        return new
-                        {
-                            success = false,
-                            error =  $"{messageGenerator?.Invoke(false) ?? "Operation failed!"}: {ex.Message}",
-                            stackTrace = ex.StackTrace
-                        };
-                    }
+                        success = false,
+                        error =  $"{messageGenerator?.Invoke(false) ?? "Operation failed!"}: {ex.Message}",
+                        stackTrace = ex.StackTrace
+                    };
                 }
             }
+        }
+
+        public static object Modify(JObject parameters,
+            Func<BlockTableRecord, Transaction, JObject, object> modifier,
+            Func<bool, string> messageGenerator = null)
+        {
+            return Run(parameters,
+                (doc, parameters) => {
+                    // Start a transaction
+                    using (Transaction trans = doc.Database.TransactionManager.StartTransaction())
+                    {
+                        try
+                        {
+                            // Get the current space (model space or paper space)
+                            BlockTable bt = (BlockTable)trans.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
+
+                            // Open the Block table record Model space for write
+                            BlockTableRecord btr = (BlockTableRecord)trans.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
+
+                            var result = modifier(btr, trans, parameters);
+
+                            // Commit the transaction
+                            trans.Commit();
+                            doc.Editor.Regen();
+
+                            return result;
+                        }
+                        catch (System.Exception ex)
+                        {
+                            trans.Abort();
+                            throw ex;
+                        }
+                    }
+                }, 
+                messageGenerator
+            );
+        }
+
+        public static object Access(JObject parameters,
+            Func<BlockTableRecord, Transaction, JObject, object> accessor,
+            Func<bool, string> messageGenerator = null)
+        {
+            return Run(parameters,
+                (doc, parameters) => {
+                    // Start a transaction
+                    using (Transaction trans = doc.Database.TransactionManager.StartTransaction())
+                    {
+                        try
+                        {
+                            // Get the current space (model space or paper space)
+                            BlockTable bt = (BlockTable)trans.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
+
+                            // Open the Block table record Model space for read
+                            BlockTableRecord btr = (BlockTableRecord)trans.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead);
+
+                            var result = accessor(btr, trans, parameters);
+
+                            // Commit the transaction
+                            trans.Commit();
+
+                            return result;
+                        }
+                        catch (System.Exception ex)
+                        {
+                            trans.Abort();
+                            throw ex;
+                        }
+                    }
+                }, 
+                messageGenerator
+            );
         }
     }
 }

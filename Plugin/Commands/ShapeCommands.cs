@@ -23,13 +23,18 @@ namespace AutoCADMCP.Commands
                     var radius = parameters["radius"].Value<double>();
                     var centerPoint = new Point3d(center[0], center[1], center.Length > 2 ? center[2] : 0);
 
+                    long entityId = 0;
+
                     // Create a circle
                     using (Circle circle = new Circle(centerPoint, Vector3d.ZAxis, radius))
                     {
                         // Add the circle to the drawing
                         btr.AppendEntity(circle);
                         trans.AddNewlyCreatedDBObject(circle, true);
+                        entityId = circle.Handle.Value;
                     }
+
+                    return entityId;
                 },
                 (isSuccess) => isSuccess ? "Circle created successfully!" : "Failed to create circle!"
             );
@@ -45,13 +50,18 @@ namespace AutoCADMCP.Commands
                     var end = parameters["end"].ToObject<double[]>();
                     var startPoint = new Point3d(start[0], start[1], start.Length > 2 ? start[2] : 0);
                     var endPoint = new Point3d(end[0], end[1], end.Length > 2 ? end[2] : 0);
+                    
+                    long entityId = 0;
 
                     // Create a line
                     using (Line line = new Line(startPoint, endPoint))
                     {
                         btr.AppendEntity(line);
                         trans.AddNewlyCreatedDBObject(line, true);
+                        entityId = line.Handle.Value;
                     }
+
+                    return entityId;
                 },  
                 (isSuccess) => isSuccess ? "Line created successfully!" : "Failed to create line!"
             );
@@ -64,6 +74,8 @@ namespace AutoCADMCP.Commands
                 (btr, trans, parameters) => {
                     // Extract parameters
                     var points = parameters["points"].ToObject<double[][]>();
+                    
+                    long entityId = 0;
 
                     using (Polyline polyline = new Polyline())
                     {
@@ -78,7 +90,10 @@ namespace AutoCADMCP.Commands
                         // Add the polyline to the drawing
                         btr.AppendEntity(polyline);
                         trans.AddNewlyCreatedDBObject(polyline, true);
+                        entityId = polyline.Handle.Value;
                     }
+
+                    return entityId;
                 },
                 (isSuccess) => isSuccess ? "Polyline created successfully!" : "Failed to create polyline!"
             );
@@ -94,6 +109,8 @@ namespace AutoCADMCP.Commands
                     var width = parameters["width"].Value<double>();
                     var height = parameters["height"].Value<double>();
                     var centerPoint = new Point3d(center[0], center[1], center.Length > 2 ? center[2] : 0);
+                    
+                    long entityId = 0;
 
                     // Create a rectangle using a polyline
                     using (Polyline rectangle = new Polyline())
@@ -113,7 +130,10 @@ namespace AutoCADMCP.Commands
 
                         btr.AppendEntity(rectangle);
                         trans.AddNewlyCreatedDBObject(rectangle, true);
+                        entityId = rectangle.Handle.Value;
                     }
+
+                    return entityId;
                 },
                 (isSuccess) => isSuccess ? "Rectangle created successfully!" : "Failed to create rectangle!"
             );
@@ -133,12 +153,17 @@ namespace AutoCADMCP.Commands
                     var majorVec = new Vector3d(majorAxis[0], majorAxis[1], majorAxis.Length > 2 ? majorAxis[2] : 0);
                     var minorVec = new Vector3d(minorAxis[0], minorAxis[1], minorAxis.Length > 2 ? minorAxis[2] : 0);
 
+                    long entityId = 0;
+
                     // Create an ellipse
                     using (Ellipse ellipse = new Ellipse(centerPoint, Vector3d.ZAxis, majorVec, minorVec.Length / majorVec.Length, 0, 2 * Math.PI))
                     {
                         btr.AppendEntity(ellipse);
                         trans.AddNewlyCreatedDBObject(ellipse, true);
+                        entityId = ellipse.Handle.Value;
                     }
+
+                    return entityId;
                 },
                 (isSuccess) => isSuccess ? "Ellipse created successfully!" : "Failed to create ellipse!"
             );
@@ -151,6 +176,8 @@ namespace AutoCADMCP.Commands
                 (btr, trans, parameters) => {
                     // Extract parameters
                     var points = parameters["points"].ToObject<double[][]>();
+
+                    long entityId = 0;
 
                     // Create a polygon using a polyline
                     using (Polyline polygon = new Polyline())
@@ -169,7 +196,10 @@ namespace AutoCADMCP.Commands
                         // Add the polygon to the drawing
                         btr.AppendEntity(polygon);
                         trans.AddNewlyCreatedDBObject(polygon, true);
+                        entityId = polygon.Handle.Value;
                     }
+
+                    return entityId;
                 },
                 (isSuccess) => isSuccess ? "Polygon created successfully!" : "Failed to create polygon!"
             );
@@ -182,6 +212,8 @@ namespace AutoCADMCP.Commands
                 (btr, trans, parameters) => {
                     // Extract parameters
                     var points = parameters["points"].ToObject<double[][]>();
+
+                    long entityId = 0;
 
                     // Create a 3D polyline instead of a polyface mesh
                     using (Polyline3d polyline3d = new Polyline3d(Poly3dType.SimplePoly, new Point3dCollection(), true))
@@ -196,7 +228,10 @@ namespace AutoCADMCP.Commands
                         // Add to the drawing
                         btr.AppendEntity(polyline3d);
                         trans.AddNewlyCreatedDBObject(polyline3d, true);
+                        entityId = polyline3d.Handle.Value;
                     }
+
+                    return entityId;
                 },
                 (isSuccess) => isSuccess ? "3D polyline created successfully!" : "Failed to create 3D polyline!"
             );

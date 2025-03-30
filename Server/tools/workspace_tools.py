@@ -10,7 +10,7 @@ def register_workspace_tools(mcp):
         """Get the current workspace mode in AutoCAD.
 
         Returns:
-            str: Success message or error details
+            str: Current workspace mode
         """
         try:
             autocad = get_autocad_connection()
@@ -19,7 +19,7 @@ def register_workspace_tools(mcp):
             if not response.get("success", False):
                 return f"Error getting current workspace: {response.get('error', 'Unknown error')}"
 
-            return response.get("message", "Current workspace retrieved successfully")
+            return response.get("result")
         except Exception as e:
             return f"Error getting current workspace: {str(e)}"
 
@@ -31,7 +31,7 @@ def register_workspace_tools(mcp):
             workspace: Name of the workspace to set (e.g., "Drafting & Annotation" or "3D Modeling")
 
         Returns:
-            str: Success message or error details
+            str: Current workspace mode
         """
         try:
             autocad = get_autocad_connection()
@@ -40,7 +40,7 @@ def register_workspace_tools(mcp):
             if not response.get("success", False):
                 return f"Error setting current workspace: {response.get('error', 'Unknown error')}"
 
-            return response.get("message", "Current workspace set successfully")
+            return response.get("result")
         except Exception as e:
             return f"Error setting current workspace: {str(e)}"
 

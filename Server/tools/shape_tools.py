@@ -10,7 +10,7 @@ def register_shape_tools(mcp: FastMCP):
         ctx: Context,
         center: List[float],
         radius: float
-    ) -> str:
+    ) -> int:
         """Draw a circle in AutoCAD.
 
         Args:
@@ -19,7 +19,7 @@ def register_shape_tools(mcp: FastMCP):
             radius: The radius of the circle
 
         Returns:
-            str: Success message or error details
+            int: Entity handle of the newly created circle
         """
         try:
             autocad = get_autocad_connection()
@@ -31,7 +31,7 @@ def register_shape_tools(mcp: FastMCP):
             if not response.get("success", False):
                 return f"Error drawing circle: {response.get('error', 'Unknown error')}"
                 
-            return response.get("message", "Circle drawn successfully")
+            return response.get("result")
         except Exception as e:
             return f"Error drawing circle: {str(e)}"
 
@@ -40,7 +40,7 @@ def register_shape_tools(mcp: FastMCP):
         ctx: Context,
         start: List[float],
         end: List[float]
-    ) -> str:
+    ) -> int:
         """Draw a line in AutoCAD.
 
         Args:
@@ -49,7 +49,7 @@ def register_shape_tools(mcp: FastMCP):
             end: The end point coordinates [x, y, z]
 
         Returns:
-            str: Success message or error details
+            int: Entity handle of the newly created line
         """
         try:
             autocad = get_autocad_connection()
@@ -61,7 +61,7 @@ def register_shape_tools(mcp: FastMCP):
             if not response.get("success", False):
                 return f"Error drawing line: {response.get('error', 'Unknown error')}"
                 
-            return response.get("message", "Line drawn successfully")
+            return response.get("result")
         except Exception as e:
             return f"Error drawing line: {str(e)}"
 
@@ -69,7 +69,7 @@ def register_shape_tools(mcp: FastMCP):
     def draw_polyline(
         ctx: Context,
         points: List[List[float]]
-    ) -> str:
+    ) -> int:
         """Draw a polyline in AutoCAD.
 
         Args:
@@ -77,7 +77,7 @@ def register_shape_tools(mcp: FastMCP):
             points: List of point coordinates [[x1, y1, z1], [x2, y2, z2], ...]
 
         Returns:
-            str: Success message or error details
+            int: Entity handle of the newly created polyline
         """
         try:
             autocad = get_autocad_connection()
@@ -88,7 +88,7 @@ def register_shape_tools(mcp: FastMCP):
             if not response.get("success", False):
                 return f"Error drawing polyline: {response.get('error', 'Unknown error')}"
                 
-            return response.get("message", "Polyline drawn successfully")
+            return response.get("result")
         except Exception as e:
             return f"Error drawing polyline: {str(e)}"
 
@@ -98,7 +98,7 @@ def register_shape_tools(mcp: FastMCP):
         center: List[float],
         width: float,
         height: float
-    ) -> str:
+    ) -> int:
         """Draw a rectangle in AutoCAD.
 
         Args:
@@ -108,7 +108,7 @@ def register_shape_tools(mcp: FastMCP):
             height: The height of the rectangle
 
         Returns:
-            str: Success message or error details
+            int: Entity handle of the newly created rectangle
         """
         try:
             autocad = get_autocad_connection()
@@ -121,7 +121,7 @@ def register_shape_tools(mcp: FastMCP):
             if not response.get("success", False):
                 return f"Error drawing rectangle: {response.get('error', 'Unknown error')}"
                 
-            return response.get("message", "Rectangle drawn successfully")
+            return response.get("result")
         except Exception as e:
             return f"Error drawing rectangle: {str(e)}"
 
@@ -131,7 +131,7 @@ def register_shape_tools(mcp: FastMCP):
         center: List[float],
         major_axis: List[float],
         minor_axis: List[float]
-    ) -> str:
+    ) -> int:
         """Draw an ellipse in AutoCAD.
 
         Args:
@@ -141,7 +141,7 @@ def register_shape_tools(mcp: FastMCP):
             minor_axis: The minor axis vector [x, y, z]
 
         Returns:
-            str: Success message or error details
+            int: Entity handle of the newly created ellipse
         """
         try:
             autocad = get_autocad_connection()
@@ -162,7 +162,7 @@ def register_shape_tools(mcp: FastMCP):
     def draw_polygon(
         ctx: Context,
         points: List[List[float]]
-    ) -> str:
+    ) -> int:
         """Draw a polygon in AutoCAD.
 
         Args:
@@ -170,7 +170,7 @@ def register_shape_tools(mcp: FastMCP):
             points: List of vertex coordinates [[x1, y1, z1], [x2, y2, z2], ...]
 
         Returns:
-            str: Success message or error details
+            int: Entity handle of the newly created polygon
         """
         try:
             autocad = get_autocad_connection()
@@ -181,7 +181,7 @@ def register_shape_tools(mcp: FastMCP):
             if not response.get("success", False):
                 return f"Error drawing polygon: {response.get('error', 'Unknown error')}"
                 
-            return response.get("message", "Polygon drawn successfully")
+            return response.get("result")
         except Exception as e:
             return f"Error drawing polygon: {str(e)}"
 
@@ -189,7 +189,7 @@ def register_shape_tools(mcp: FastMCP):
     def draw_polyface(
         ctx: Context,
         points: List[List[float]]
-    ) -> str:
+    ) -> int:
         """Draw a polyface mesh in AutoCAD.
 
         Args:
@@ -197,7 +197,7 @@ def register_shape_tools(mcp: FastMCP):
             points: List of vertex coordinates [[x1, y1, z1], [x2, y2, z2], ...]
 
         Returns:
-            str: Success message or error details
+            int: Entity handle of the newly created polyface
         """
         try:
             autocad = get_autocad_connection()
@@ -208,6 +208,6 @@ def register_shape_tools(mcp: FastMCP):
             if not response.get("success", False):
                 return f"Error drawing polyface: {response.get('error', 'Unknown error')}"
                 
-            return response.get("message", "Polyface drawn successfully")
+            return response.get("result")
         except Exception as e:
             return f"Error drawing polyface: {str(e)}"
