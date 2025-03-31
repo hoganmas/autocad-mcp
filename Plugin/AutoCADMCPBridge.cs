@@ -318,6 +318,7 @@ namespace AutoCADMCP
                 if (commandHandlers.TryGetValue(command.Type, out var handler))
                 {
                     object result = handler.method.Invoke(handler.instance, new[] { command.Parameters });
+                    Log.Info($"Command {command.Type} executed successfully with result: {result}");
                     var response = new { status = "success", result };
                     return JsonConvert.SerializeObject(response);
                 }

@@ -41,4 +41,43 @@ def register_entity_tools(mcp):
         except Exception as e:
             return f"Error getting selected entities: {str(e)}"
 
-    
+    @mcp.tool()
+    def get_entity_properties(ctx: Context, entity_handles: List[int]) -> List[Dict[str, Any]]:
+        """Get properties of an entity.
+
+        Returns:
+            List[Dict[str, Any]]: List of dictionaries containing entity types and properties
+        """
+        try:
+            autocad = get_autocad_connection()
+            response = autocad.send_command("GET_ENTITY_PROPERTIES", {
+                "entityIds": entity_handles
+            })
+
+            if not response.get("success", False):
+                return f"Error getting entity properties: {response.get('error', 'Unknown error')}"
+
+            return response.get("result")
+        except Exception as e:
+            return f"Error getting entity properties: {str(e)}"
+
+    @mcp.tool()
+    def set_entity_properties(ctx: Context, entity_handles: List[int], properties: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Set properties of an entity.
+
+        Returns:
+            List[Dict[str, Any]]: List of dictionaries containing updated entity types and properties
+        """
+        try:
+            autocad = get_autocad_connection()
+            response = autocad.send_command("SET_ENTITY_PROPERTIES", {
+                "entityIds": entity_handles,
+                "properties": properties
+            })
+
+            if not response.get("success", False):
+                return f"Error setting entity properties: {response.get('error', 'Unknown error')}"
+
+            return response.get("result")
+        except Exception as e:
+            return f"Error setting entity properties: {str(e)}"
