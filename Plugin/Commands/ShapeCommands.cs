@@ -23,18 +23,14 @@ namespace AutoCADMCP.Commands
                     var radius = parameters["radius"].Value<double>();
                     var centerPoint = new Point3d(center[0], center[1], center.Length > 2 ? center[2] : 0);
 
-                    long entityId = 0;
-
                     // Create a circle
                     using (Circle circle = new Circle(centerPoint, Vector3d.ZAxis, radius))
                     {
                         // Add the circle to the drawing
                         btr.AppendEntity(circle);
                         trans.AddNewlyCreatedDBObject(circle, true);
-                        entityId = circle.Handle.Value;
+                        return circle.Handle.Value;
                     }
-
-                    return entityId;
                 },
                 (isSuccess) => isSuccess ? "Circle created successfully!" : "Failed to create circle!"
             );
@@ -51,17 +47,13 @@ namespace AutoCADMCP.Commands
                     var startPoint = new Point3d(start[0], start[1], start.Length > 2 ? start[2] : 0);
                     var endPoint = new Point3d(end[0], end[1], end.Length > 2 ? end[2] : 0);
                     
-                    long entityId = 0;
-
                     // Create a line
                     using (Line line = new Line(startPoint, endPoint))
                     {
                         btr.AppendEntity(line);
                         trans.AddNewlyCreatedDBObject(line, true);
-                        entityId = line.Handle.Value;
+                        return line.Handle.Value;
                     }
-
-                    return entityId;
                 },  
                 (isSuccess) => isSuccess ? "Line created successfully!" : "Failed to create line!"
             );
