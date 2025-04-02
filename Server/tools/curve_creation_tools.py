@@ -2,8 +2,8 @@ from typing import Optional, List
 from mcp.server.fastmcp import FastMCP, Context
 from autocad_connection import get_autocad_connection
 
-def register_shape_tools(mcp: FastMCP):
-    """Register all shape management tools with the MCP server."""
+def register_curve_creation_tools(mcp: FastMCP):
+    """Register all curve management tools with the MCP server."""
     
     @mcp.tool()
     def draw_circle(

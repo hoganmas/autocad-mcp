@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 from mcp.server.fastmcp import FastMCP, Context
 from autocad_connection import get_autocad_connection
 
-def register_entity_tools(mcp):
+def register_entity_tools(mcp: FastMCP):
     """Register all entity-related tools with the MCP server."""
 
     @mcp.tool()

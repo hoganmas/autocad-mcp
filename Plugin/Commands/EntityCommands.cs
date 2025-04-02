@@ -11,7 +11,7 @@ using Autodesk.AutoCAD.EditorInput;
 
 namespace AutoCADMCP.Commands
 {
-    public static class EntityCommandHandler
+    public static class EntityCommands
     {
         private static List<PropertyInfo> GetEntityPropertyInfo(Entity ent)
         {

@@ -11,7 +11,7 @@ using Autodesk.AutoCAD.EditorInput;
 
 namespace AutoCADMCP.Commands
 {
-    public static class Shape3dCommandHandler
+    public static class SolidCreationCommands
     {
         [MCPCommand("CREATE_BOX")]
         public static object CreateBox(JObject parameters)

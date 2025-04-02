@@ -11,7 +11,7 @@ using Autodesk.AutoCAD.EditorInput;
 
 namespace AutoCADMCP.Commands
 {
-    public static class ShapeCommandHandler
+    public static class CurveCreationCommands
     {
         [MCPCommand("DRAW_CIRCLE")]
         public static object DrawCircle(JObject parameters)

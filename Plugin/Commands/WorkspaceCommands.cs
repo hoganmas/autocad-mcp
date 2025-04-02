@@ -7,7 +7,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 
 namespace AutoCADMCP.Commands
 {
-    public static class WorkspaceCommandHandler
+    public static class WorkspaceCommands
     {
         [MCPCommand("GET_CURRENT_WORKSPACE")]
         public static object GetCurrentWorkspace(JObject parameters)

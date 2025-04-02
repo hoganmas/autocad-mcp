@@ -2,8 +2,8 @@ from typing import Optional, List
 from mcp.server.fastmcp import FastMCP, Context
 from autocad_connection import get_autocad_connection
 
-def register_shape3d_tools(mcp: FastMCP):
-    """Register all shape 3D management tools with the MCP server."""
+def register_solid_creation_tools(mcp: FastMCP):
+    """Register all solid 3D management tools with the MCP server."""
     
     @mcp.tool()
     def create_box(ctx: Context, center: List[float], size: List[float]) -> int:
