@@ -166,48 +166,34 @@ namespace AutoCADMCP.Commands
             );
         }
 
-        public static object ModifyEntities(JObject parameters,
+        public static object ModifyEachEntity(JObject parameters,
             Func<Entity, BlockTableRecord, Transaction, JObject, object> modifier,
             Func<bool, string> messageGenerator = null)
         {
             return Run(parameters,
                 (doc, parameters) => {
-                    Log.Info("cp1");
                     var entityIds = parameters["entityIds"].ToObject<List<long>>();
-
-                    Log.Info("cp2");
 
                     var entityParameters = parameters.ContainsKey("entityParameters") ?
                         parameters["entityParameters"].ToObject<List<JObject>>() : null;
-
-                    Log.Info("cp3");
 
                     // Start a transaction
                     using (Transaction trans = doc.Database.TransactionManager.StartTransaction())
                     {
                         try 
                         {
-                            Log.Info("cp4");
-
                             // Get the current space (model space or paper space)
                             BlockTable bt = (BlockTable)trans.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
 
                             // Open the Block table record Model space for write
                             BlockTableRecord btr = (BlockTableRecord)trans.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
 
-                            Log.Info("cp5");
-
                             var results = new List<object>();
                             for (int i = 0; i < entityIds.Count; i++)
                             {
-                                Log.Info("cp6");
                                 if (doc.Database.TryGetObjectId(new Handle(entityIds[i]), out ObjectId objId))
-                                {
-                                    Log.Info("cp7");
-                                    
+                                {                                    
                                     Entity ent = trans.GetObject(objId, OpenMode.ForWrite) as Entity;
-
-                                    Log.Info("cp8");
                                     var result = modifier(ent, btr, trans, entityParameters != null ? entityParameters[i] : null);
                                     results.Add(result);
                                 }
@@ -222,6 +208,58 @@ namespace AutoCADMCP.Commands
                             doc.Editor.Regen();
 
                             return results;
+                        }
+                        catch (System.Exception ex)
+                        {
+                            trans.Abort();
+                            throw ex;
+                        }
+                    }
+                }, 
+                messageGenerator
+            );
+        }
+
+        public static object ModifyEntities(JObject parameters,
+            Func<List<Entity>, BlockTableRecord, Transaction, JObject, object> modifier,
+            Func<bool, string> messageGenerator = null)
+        {
+            return Run(parameters,
+                (doc, parameters) => {
+                    var entityIds = parameters["entityIds"].ToObject<List<long>>();
+
+                    // Start a transaction
+                    using (Transaction trans = doc.Database.TransactionManager.StartTransaction())
+                    {
+                        try 
+                        {
+                            // Get the current space (model space or paper space)
+                            BlockTable bt = (BlockTable)trans.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
+
+                            // Open the Block table record Model space for write
+                            BlockTableRecord btr = (BlockTableRecord)trans.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
+
+                            var entities = new List<Entity>();
+                            for (int i = 0; i < entityIds.Count; i++)
+                            {
+                                if (doc.Database.TryGetObjectId(new Handle(entityIds[i]), out ObjectId objId))
+                                {
+                                    Entity ent = trans.GetObject(objId, OpenMode.ForWrite) as Entity;
+                                    entities.Add(ent);
+                                }
+                                else
+                                {
+                                    throw new System.Exception("Entity not found");
+                                }
+                            }
+
+                            var result = modifier(entities, btr, trans, parameters);
+
+                            // Commit the transaction
+                            trans.Commit();
+                            doc.Editor.Regen();
+
+                            return result;
                         }
                         catch (System.Exception ex)
                         {

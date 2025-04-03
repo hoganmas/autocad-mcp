@@ -16,7 +16,7 @@ namespace AutoCADMCP.Commands
         [MCPCommand("MOVE_ENTITIES")]
         public static object MoveEntities(JObject parameters)
         {
-            return CommandTemplates.ModifyEntities(parameters,
+            return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
                     var delta = parameters["delta"].ToObject<double[]>();
                     var deltaVector = new Vector3d(delta[0], delta[1], delta.Length > 2 ? delta[2] : 0);
@@ -35,7 +35,7 @@ namespace AutoCADMCP.Commands
         [MCPCommand("ROTATE_ENTITIES")]
         public static object RotateEntities(JObject parameters)
         {
-            return CommandTemplates.ModifyEntities(parameters,
+            return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
                     var angle = parameters["angle"].ToObject<double>();
                     var axis = parameters["axis"].ToObject<double[]>();
@@ -58,7 +58,7 @@ namespace AutoCADMCP.Commands
         [MCPCommand("SCALE_ENTITIES")]
         public static object ScaleEntities(JObject parameters)
         {
-            return CommandTemplates.ModifyEntities(parameters,
+            return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
                     var scale = parameters["scale"].ToObject<double>();
                     var origin = parameters["origin"].ToObject<double[]>();
@@ -78,7 +78,7 @@ namespace AutoCADMCP.Commands
         [MCPCommand("MIRROR_ENTITIES")]
         public static object MirrorEntities(JObject parameters)
         {
-            return CommandTemplates.ModifyEntities(parameters,
+            return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
                     var origin = parameters["origin"].ToObject<double[]>();
                     var normal = parameters["normal"].ToObject<double[]>();
@@ -101,7 +101,7 @@ namespace AutoCADMCP.Commands
         [MCPCommand("DELETE_ENTITIES")]
         public static object DeleteEntities(JObject parameters)
         {
-            return CommandTemplates.ModifyEntities(parameters,
+            return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
                     ent.Erase();
 
@@ -118,7 +118,7 @@ namespace AutoCADMCP.Commands
         [MCPCommand("DUPLICATE_ENTITIES")]
         public static object DuplicateEntities(JObject parameters)
         {
-            return CommandTemplates.ModifyEntities(parameters,
+            return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
                     var delta = parameters["delta"].ToObject<double[]>();
                     var deltaVector = new Vector3d(delta[0], delta[1], delta.Length > 2 ? delta[2] : 0);
@@ -142,7 +142,7 @@ namespace AutoCADMCP.Commands
         [MCPCommand("EXPLODE_ENTITIES")]
         public static object ExplodeEntities(JObject parameters)
         {
-            return CommandTemplates.ModifyEntities(parameters,
+            return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
                     var fragments = new DBObjectCollection();
                     ent.Explode(fragments);
@@ -168,6 +168,35 @@ namespace AutoCADMCP.Commands
                     return entityInfos;
                 },
                 (isSuccess) => isSuccess ? "Entities exploded successfully!" : "Failed to explode entities!"
+            );
+        }
+
+        [MCPCommand("JOIN_ENTITIES")]
+        public static object JoinEntities(JObject parameters)
+        {
+            return CommandTemplates.ModifyEntities(parameters,
+                (entities, btr, trans, parameters) => {
+                    Entity joinedEntity = null;
+                    foreach (var entity in entities)
+                    {
+                        if (joinedEntity == null)
+                        {
+                            joinedEntity = entity;
+                        }
+                        else
+                        {
+                            joinedEntity.JoinEntity(entity);
+                            entity.Erase();
+                        }
+                    }
+
+                    return new {
+                        handle = joinedEntity.Handle.Value,
+                        type = joinedEntity.GetType().Name,
+                        properties = EntityCommands.GetEntityProperties(joinedEntity)
+                    };
+                },
+                (isSuccess) => isSuccess ? "Entities joined successfully!" : "Failed to join entities!"
             );
         }
     }

@@ -49,5 +49,73 @@ namespace AutoCADMCP.Commands
                 }
             );
         }
+
+        [MCPCommand("CREATE_REGION")]
+        public static object CreateRegion(JObject parameters)
+        {
+            return CommandTemplates.ModifyEntities(parameters,
+                (entities, btr, trans, parameters) => {
+                    DBObjectCollection curves = new DBObjectCollection();
+                    entities.ForEach(ent => curves.Add(ent));
+
+                    using (DBObjectCollection regionCollection = Region.CreateFromCurves(curves))
+                    {
+                        if (regionCollection.Count == 0)
+                        {
+                            throw new System.Exception("Failed to create region.");
+                        }
+
+                        Region region = regionCollection[0] as Region;
+                        if (region == null)
+                        {
+                            throw new System.Exception("Failed to create region.");
+                        }
+
+                        btr.AppendEntity(region);
+                        trans.AddNewlyCreatedDBObject(region, true);
+
+                        return new {
+                            handle = region.Handle.Value,
+                            type = region.GetType().Name,
+                            properties = EntityCommands.GetEntityProperties(region)
+                        };
+                    }
+                },
+                (isSuccess) => isSuccess ? "Region created successfully!" : "Failed to create region!"
+            );
+        }
+
+        [MCPCommand("EXTRUDE_REGION")]
+        public static object ExtrudeRegion(JObject parameters)
+        {
+            return CommandTemplates.ModifyEntity(parameters,
+                (ent, btr, trans, parameters) => {
+                    // Extract parameters
+                    var distance = parameters["distance"].Value<double>();
+
+                    if (ent is Region region)
+                    {
+                        // Create a Solid3D from the region
+                        Solid3d solid = new Solid3d();
+                        solid.Extrude(region, distance, 0);
+
+                        // Add the new solid to Model Space
+                        btr.AppendEntity(solid);
+                        trans.AddNewlyCreatedDBObject(solid, true);
+
+                        return new {
+                            handle = solid.Handle.Value,
+                            type = solid.GetType().Name,
+                            properties = EntityCommands.GetEntityProperties(solid)
+                        };
+                    }
+                    else
+                    {
+                        throw new System.Exception("Entity is not a region");
+                    }
+                },
+                (isSuccess) => isSuccess ? "Region extruded successfully!" : "Failed to extrude region!"
+            );
+        }
     }
 }

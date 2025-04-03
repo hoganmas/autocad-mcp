@@ -69,7 +69,7 @@ namespace AutoCADMCP.Commands
         [MCPCommand("GET_ENTITY_PROPERTIES")]
         public static object GetEntityProperties(JObject parameters)
         {
-            return CommandTemplates.ModifyEntities(parameters,
+            return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
                     return new {
                         handle = ent.Handle.Value,
@@ -83,7 +83,7 @@ namespace AutoCADMCP.Commands
         [MCPCommand("SET_ENTITY_PROPERTIES")]
         public static object SetEntityProperties(JObject parameters)
         {
-            return CommandTemplates.ModifyEntities(parameters,
+            return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
                     // Set the properties of the entity
                     var inputProperties = parameters.ToObject<Dictionary<string, object>>();
