@@ -62,8 +62,15 @@ def register_entity_tools(mcp: FastMCP):
             return f"Error getting entity properties: {str(e)}"
 
     @mcp.tool()
-    def set_entity_properties(ctx: Context, entity_handles: List[int], properties: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def set_entity_properties(ctx: Context, entity_handles: List[int], properties: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Set properties of an entity.
+
+        Args:
+            entity_handles: The handles of the entities to set properties for
+            properties: The properties to set for each entity
+
+        Requires:
+            len(entity_handles) == len(properties)
 
         Returns:
             List[Dict[str, Any]]: List of dictionaries containing updated entity types and properties
@@ -72,7 +79,7 @@ def register_entity_tools(mcp: FastMCP):
             autocad = get_autocad_connection()
             response = autocad.send_command("SET_ENTITY_PROPERTIES", {
                 "entityIds": entity_handles,
-                "properties": properties
+                "entityParameters": properties
             })
 
             if not response.get("success", False):
