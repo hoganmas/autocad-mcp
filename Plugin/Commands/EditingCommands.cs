@@ -27,7 +27,8 @@ namespace AutoCADMCP.Commands
                         type = ent.GetType().Name,
                         properties = EntityCommands.GetEntityProperties(ent)
                     };
-                }
+                },
+                (isSuccess) => isSuccess ? "Entities moved successfully!" : "Failed to move entities!"
             );
         }
 
@@ -49,7 +50,8 @@ namespace AutoCADMCP.Commands
                         type = ent.GetType().Name,
                         properties = EntityCommands.GetEntityProperties(ent)
                     };
-                }
+                },
+                (isSuccess) => isSuccess ? "Entities rotated successfully!" : "Failed to rotate entities!"
             );
         }
 
@@ -91,7 +93,8 @@ namespace AutoCADMCP.Commands
                         type = ent.GetType().Name,
                         properties = EntityCommands.GetEntityProperties(ent)
                     };
-                }
+                },
+                (isSuccess) => isSuccess ? "Entities mirrored successfully!" : "Failed to mirror entities!"
             );
         }
 
@@ -107,7 +110,8 @@ namespace AutoCADMCP.Commands
                         type = ent.GetType().Name,
                         properties = EntityCommands.GetEntityProperties(ent)
                     };
-                }
+                },
+                (isSuccess) => isSuccess ? "Entities deleted successfully!" : "Failed to delete entities!"
             );
         }
 
@@ -130,7 +134,8 @@ namespace AutoCADMCP.Commands
                         type = copy.GetType().Name,
                         properties = EntityCommands.GetEntityProperties(copy)
                     };
-                }
+                },
+                (isSuccess) => isSuccess ? "Entities duplicated successfully!" : "Failed to duplicate entities!"
             );
         }
 
@@ -161,7 +166,8 @@ namespace AutoCADMCP.Commands
                     ent.Erase();
 
                     return entityInfos;
-                }
+                },
+                (isSuccess) => isSuccess ? "Entities exploded successfully!" : "Failed to explode entities!"
             );
         }
     }
