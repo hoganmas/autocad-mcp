@@ -267,3 +267,34 @@ def register_editing_tools(mcp: FastMCP):
             return response.get("result")
         except Exception as e:
             return f"Error exploding entities: {str(e)}"
+
+    @mcp.tool()
+    def join_entities(
+        ctx: Context,
+        entity_handles: List[int]
+    ) -> Dict[str, Any]:
+        """Join entities in AutoCAD.
+
+        Args:
+            ctx: The MCP context
+            entity_handles: The handles of the entities to join
+
+        Requires:
+            len(entity_handles) > 0
+
+        Returns:
+            Dict[str, Any]: Dictionary containing the handle, type, and properties of the joined entity. 
+            This will be the first entity in the entity_handles list. All other entities will be deleted.
+        """
+        try:
+            autocad = get_autocad_connection()
+            response = autocad.send_command("JOIN_ENTITIES", {
+                "entityIds": entity_handles
+            })
+
+            if not response.get("success", False):
+                return f"Error joining entities: {response.get('error', 'Unknown error')}"
+                
+            return response.get("result")
+        except Exception as e:
+            return f"Error joining entities: {str(e)}"
