@@ -50,8 +50,8 @@ namespace AutoCADMCP.Commands
             );
         }
 
-        [MCPCommand("CREATE_REGION")]
-        public static object CreateRegion(JObject parameters)
+        [MCPCommand("CREATE_REGIONS")]
+        public static object CreateRegions(JObject parameters)
         {
             return CommandTemplates.ModifyEntities(parameters,
                 (entities, btr, trans, parameters) => {
@@ -65,20 +65,21 @@ namespace AutoCADMCP.Commands
                             throw new System.Exception("Failed to create region.");
                         }
 
-                        Region region = regionCollection[0] as Region;
-                        if (region == null)
+                        var regionInfos = new List<object>();
+
+                        foreach (Region region in regionCollection)
                         {
-                            throw new System.Exception("Failed to create region.");
+                            btr.AppendEntity(region);
+                            trans.AddNewlyCreatedDBObject(region, true);
+
+                            regionInfos.Add(new {
+                                handle = region.Handle.Value,
+                                type = region.GetType().Name,
+                                properties = EntityCommands.GetEntityProperties(region)
+                            });
                         }
 
-                        btr.AppendEntity(region);
-                        trans.AddNewlyCreatedDBObject(region, true);
-
-                        return new {
-                            handle = region.Handle.Value,
-                            type = region.GetType().Name,
-                            properties = EntityCommands.GetEntityProperties(region)
-                        };
+                        return regionInfos;
                     }
                 },
                 (isSuccess) => isSuccess ? "Region created successfully!" : "Failed to create region!"

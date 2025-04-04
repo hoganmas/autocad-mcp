@@ -60,6 +60,8 @@ async def autocad_prompt(prompt: str) -> str:
         4. Clean up unused entities to maintain drawing efficiency
         5. Group related operations for better organization
         6. Use appropriate coordinate systems for your operations
+        7. By default, x axis is to the right and y axis is up, and z axis is out of the screen. 2D entities are parallel to the xy plane.
+        8. Angles are by default in radians.
 
         ## Error Handling
 

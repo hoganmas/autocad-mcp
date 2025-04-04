@@ -56,7 +56,7 @@ def register_editing_tools(mcp: FastMCP):
         Args:
             ctx: The MCP context
             entity_handles: The handles of the entities to rotate
-            angles: The angles to rotate the entities
+            angles: The angles to rotate the entities (in radians)
             axes: The axes to rotate the entities around [x, y, z]
             origins: The origins to rotate the entities around [x, y, z]
 
