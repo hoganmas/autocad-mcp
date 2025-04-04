@@ -1,5 +1,6 @@
 from mcp.server.fastmcp import FastMCP, Context, Image
 import logging
+import textwrap
 from dataclasses import dataclass
 from contextlib import asynccontextmanager
 from typing import AsyncIterator, Dict, Any, List
@@ -47,6 +48,26 @@ mcp = FastMCP(
 register_all_tools(mcp)
 
 # TODO: Add mcp prompt
+@mcp.prompt("autocad")
+async def autocad_prompt(prompt: str) -> str:
+    """Prompt for AutoCAD."""
+    return textwrap.dedent("""
+        ## Best Practices
+
+        1. Always store entity handles returned from creation operations
+        2. Check operation results for success/failure
+        3. Use appropriate error handling for failed operations
+        4. Clean up unused entities to maintain drawing efficiency
+        5. Group related operations for better organization
+        6. Use appropriate coordinate systems for your operations
+
+        ## Error Handling
+
+        Most operations return either:
+        - An entity handle (for creation operations)
+        - A dictionary containing success/failure status and properties
+        - An error message if the operation fails
+    """)
 
 # Run the server
 if __name__ == "__main__":
