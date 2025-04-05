@@ -199,13 +199,14 @@ def register_editing_tools(mcp: FastMCP):
         except Exception as e:
             return f"Error deleting entities: {str(e)}" 
         
+    """
     @mcp.tool()
     def duplicate_entities(
         ctx: Context,
         entity_handles: List[int],
         deltas: List[List[float]]
     ) -> List[Dict[str, Any]]:
-        """Duplicate entities in AutoCAD.
+        \"""Duplicate entities in AutoCAD.
 
         Args:
             ctx: The MCP context
@@ -217,7 +218,7 @@ def register_editing_tools(mcp: FastMCP):
 
         Returns:
             List[Dict[str, Any]]: List of dictionaries containing the properties of the newly created entities
-        """
+        \"""
         try:
             autocad = get_autocad_connection()
             response = autocad.send_command("DUPLICATE_ENTITIES", {
@@ -236,6 +237,58 @@ def register_editing_tools(mcp: FastMCP):
             return response.get("result")
         except Exception as e:
             return f"Error duplicating entities: {str(e)}"
+    """
+
+    @mcp.tool()
+    def make_entity_pattern(
+        ctx: Context,
+        entity_handles: List[int],
+        count: int,
+        pattern_type: str,
+        delta: List[float] = None,
+        angle: float = None,
+        axis: List[float] = None,
+        origin: List[float] = None
+    ) -> List[Dict[str, Any]]:
+        """Make an entity pattern in AutoCAD.
+
+        Args:
+            ctx: The MCP context
+            entity_handles: The handles of the entities to make a pattern of
+            count: The number of entities to create in the pattern. If count is 1, no entities will be created.
+            pattern_type: The type of pattern to create (linear, radial)
+            delta: The distance between each entity in the pattern [x, y, z] (only for linear patterns)
+            angle: The angle to rotate the entities (in radians) (only for radial patterns)
+            axis: The axis to rotate the entities around [x, y, z] (only for radial patterns)
+            origin: The origin to rotate the entities around [x, y, z] (only for radial patterns)
+
+        Returns:
+            List[Dict[str, Any]]: List of dictionaries containing the properties of the newly created entities
+        """
+        try:
+            autocad = get_autocad_connection()
+
+            properties = {
+                "entityIds": entity_handles,
+                "count": count,
+                "patternType": pattern_type
+            }
+
+            if pattern_type == "linear":
+                properties["delta"] = delta
+            elif pattern_type == "radial":
+                properties["angle"] = angle
+                properties["axis"] = axis
+                properties["origin"] = origin
+
+            response = autocad.send_command("MAKE_ENTITY_PATTERN", properties)
+
+            if not response.get("success", False):
+                return f"Error making entity pattern: {response.get('error', 'Unknown error')}"
+                
+            return response.get("result")
+        except Exception as e:
+            return f"Error making entity pattern: {str(e)}"
 
     @mcp.tool()
     def explode_entities(

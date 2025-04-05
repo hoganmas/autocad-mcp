@@ -71,7 +71,8 @@ namespace AutoCADMCP.Commands
                         type = ent.GetType().Name,
                         properties = EntityCommands.GetEntityProperties(ent)
                     };
-                }
+                },
+                (isSuccess) => isSuccess ? "Entities scaled successfully!" : "Failed to scale entities!"
             );
         }
 
@@ -115,6 +116,7 @@ namespace AutoCADMCP.Commands
             );
         }
 
+        /*
         [MCPCommand("DUPLICATE_ENTITIES")]
         public static object DuplicateEntities(JObject parameters)
         {
@@ -136,6 +138,69 @@ namespace AutoCADMCP.Commands
                     };
                 },
                 (isSuccess) => isSuccess ? "Entities duplicated successfully!" : "Failed to duplicate entities!"
+            );
+        }
+        */
+
+        [MCPCommand("MAKE_ENTITY_PATTERN")]
+        public static object MakeEntityPattern(JObject parameters)
+        {
+            return CommandTemplates.ModifyEntities(parameters,
+                (entities, btr, trans, parameters) => {
+                    var count = parameters["count"].ToObject<int>();
+                    var patternType = parameters["patternType"].ToObject<string>();
+
+                    Matrix3d transform = Matrix3d.Identity;
+
+                    if (patternType == "linear")
+                    {
+                        var delta = parameters["delta"].ToObject<double[]>();
+                        var deltaVector = new Vector3d(delta[0], delta[1], delta.Length > 2 ? delta[2] : 0);
+
+                        transform = Matrix3d.Displacement(deltaVector);
+                    }
+                    else if (patternType == "radial")
+                    {
+                        var angle = parameters["angle"].ToObject<double>();
+                        var axis = parameters["axis"].ToObject<double[]>();
+                        var origin = parameters["origin"].ToObject<double[]>();
+
+                        var originPoint = new Point3d(origin[0], origin[1], origin.Length > 2 ? origin[2] : 0);
+                        var axisVector = new Vector3d(axis[0], axis[1], axis.Length > 2 ? axis[2] : 0);
+                        var plane = new Plane(originPoint, axisVector);
+
+                        transform = Matrix3d.Rotation(angle, axisVector, originPoint);
+                    }
+                    else
+                    {
+                        throw new System.Exception("Invalid pattern type");
+                    }
+
+                    var result = new List<List<object>>();
+                    foreach (var entity in entities)
+                    {
+                        Entity clone = entity;
+                        var clones = new List<object>();
+                        for (int i = 1; i < count; i++)
+                        {
+                            clone = clone.Clone() as Entity;
+                            btr.AppendEntity(clone);
+                            trans.AddNewlyCreatedDBObject(clone, true);
+
+                            clone.TransformBy(transform);
+
+                            clones.Add(new {
+                                handle = clone.Handle.Value,
+                                type = clone.GetType().Name,
+                                properties = EntityCommands.GetEntityProperties(clone)
+                            });
+                        }
+                        result.Add(clones);
+                    }
+
+                    return result;
+                },
+                (isSuccess) => isSuccess ? "Entity pattern created successfully!" : "Failed to create entity pattern!"
             );
         }
 

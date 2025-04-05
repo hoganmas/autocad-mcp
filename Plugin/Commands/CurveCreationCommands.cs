@@ -91,6 +91,7 @@ namespace AutoCADMCP.Commands
             );
         }
 
+        /*
         [MCPCommand("DRAW_RECTANGLE")]
         public static object DrawRectangle(JObject parameters)
         {
@@ -130,6 +131,7 @@ namespace AutoCADMCP.Commands
                 (isSuccess) => isSuccess ? "Rectangle created successfully!" : "Failed to create rectangle!"
             );
         }
+        */
 
         [MCPCommand("DRAW_ELLIPSE")]
         public static object DrawEllipse(JObject parameters)
@@ -161,6 +163,7 @@ namespace AutoCADMCP.Commands
             );
         }   
 
+        /*
         [MCPCommand("DRAW_POLYGON")]
         public static object DrawPolygon(JObject parameters)
         {
@@ -196,9 +199,10 @@ namespace AutoCADMCP.Commands
                 (isSuccess) => isSuccess ? "Polygon created successfully!" : "Failed to create polygon!"
             );
         }
+        */
 
-        [MCPCommand("DRAW_POLYFACE")]
-        public static object DrawPolyface(JObject parameters)
+        [MCPCommand("DRAW_POLYLINE3D")]
+        public static object DrawPolyline3d(JObject parameters)
         {
             return CommandTemplates.Modify(parameters, 
                 (btr, trans, parameters) => {
@@ -226,6 +230,68 @@ namespace AutoCADMCP.Commands
                     return entityId;
                 },
                 (isSuccess) => isSuccess ? "3D polyline created successfully!" : "Failed to create 3D polyline!"
+            );
+        }
+
+        [MCPCommand("DRAW_SPLINE")]
+        public static object DrawSpline(JObject parameters)
+        {
+            return CommandTemplates.Modify(parameters,
+                (btr, trans, parameters) => {
+                    // Extract parameters   
+                    var points = parameters["points"].ToObject<double[][]>();
+                    var order = parameters["order"].Value<int>();
+                    var fitTolerance = parameters["fitTolerance"].Value<double>();
+
+                    long entityId = 0;
+
+                    Point3dCollection pointCollection = new Point3dCollection();
+                    foreach (var point in points)
+                    {
+                        var pt3d = new Point3d(point[0], point[1], point.Length > 2 ? point[2] : 0);
+                        pointCollection.Add(pt3d);
+                    }
+
+                    // Create a spline
+                    using (Spline spline = new Spline(pointCollection, order, fitTolerance))
+                    {
+                        btr.AppendEntity(spline);
+                        trans.AddNewlyCreatedDBObject(spline, true);
+                        entityId = spline.Handle.Value;
+                    }
+
+                    return entityId;
+                },
+                (isSuccess) => isSuccess ? "Spline created successfully!" : "Failed to create spline!"
+            );
+        }
+
+        [MCPCommand("DRAW_ARC")]
+        public static object DrawArc(JObject parameters)
+        {
+            return CommandTemplates.Modify(parameters,
+                (btr, trans, parameters) => {
+                    // Extract parameters
+                    var center = parameters["center"].ToObject<double[]>();
+                    var radius = parameters["radius"].Value<double>();
+                    var startAngle = parameters["startAngle"].Value<double>();
+                    var endAngle = parameters["endAngle"].Value<double>();
+
+                    var centerPoint = new Point3d(center[0], center[1], center.Length > 2 ? center[2] : 0);
+                    
+                    long entityId = 0;
+
+                    // Create an arc
+                    using (Arc arc = new Arc(centerPoint, Vector3d.ZAxis, radius, startAngle, endAngle))
+                    {
+                        btr.AppendEntity(arc);  
+                        trans.AddNewlyCreatedDBObject(arc, true);
+                        entityId = arc.Handle.Value;
+                    }
+
+                    return entityId;
+                },
+                (isSuccess) => isSuccess ? "Arc created successfully!" : "Failed to create arc!"    
             );
         }
     }

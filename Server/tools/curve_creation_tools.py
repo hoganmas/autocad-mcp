@@ -92,6 +92,7 @@ def register_curve_creation_tools(mcp: FastMCP):
         except Exception as e:
             return f"Error drawing polyline: {str(e)}"
 
+    """
     @mcp.tool()
     def draw_rectangle(
         ctx: Context,
@@ -99,7 +100,7 @@ def register_curve_creation_tools(mcp: FastMCP):
         width: float,
         height: float
     ) -> int:
-        """Draw a rectangle in AutoCAD.
+        \"""Draw a rectangle in AutoCAD.
 
         Args:
             ctx: The MCP context
@@ -109,7 +110,7 @@ def register_curve_creation_tools(mcp: FastMCP):
 
         Returns:
             int: Entity handle of the newly created rectangle
-        """
+        \"""
         try:
             autocad = get_autocad_connection()
             response = autocad.send_command("DRAW_RECTANGLE", {
@@ -124,6 +125,7 @@ def register_curve_creation_tools(mcp: FastMCP):
             return response.get("result")
         except Exception as e:
             return f"Error drawing rectangle: {str(e)}"
+    """
 
     @mcp.tool()
     def draw_ellipse(
@@ -158,12 +160,13 @@ def register_curve_creation_tools(mcp: FastMCP):
         except Exception as e:
             return f"Error drawing ellipse: {str(e)}"
 
+    """
     @mcp.tool()
     def draw_polygon(
         ctx: Context,
         points: List[List[float]]
     ) -> int:
-        """Draw a polygon in AutoCAD.
+        \"""Draw a polygon in AutoCAD.
 
         Args:
             ctx: The MCP context
@@ -171,7 +174,7 @@ def register_curve_creation_tools(mcp: FastMCP):
 
         Returns:
             int: Entity handle of the newly created polygon
-        """
+        \"""
         try:
             autocad = get_autocad_connection()
             response = autocad.send_command("DRAW_POLYGON", {
@@ -184,24 +187,25 @@ def register_curve_creation_tools(mcp: FastMCP):
             return response.get("result")
         except Exception as e:
             return f"Error drawing polygon: {str(e)}"
+    """
 
     @mcp.tool()
-    def draw_polyface(
+    def draw_polyline3d(
         ctx: Context,
         points: List[List[float]]
     ) -> int:
-        """Draw a polyface mesh in AutoCAD.
+        """Draw a 3D polyline in AutoCAD.
 
         Args:
             ctx: The MCP context
             points: List of vertex coordinates [[x1, y1, z1], [x2, y2, z2], ...]
 
         Returns:
-            int: Entity handle of the newly created polyface
+            int: Entity handle of the newly created 3D polyline
         """
         try:
             autocad = get_autocad_connection()
-            response = autocad.send_command("DRAW_POLYFACE", {
+            response = autocad.send_command("DRAW_POLYLINE3D", {
                 "points": points
             })
             
@@ -211,3 +215,72 @@ def register_curve_creation_tools(mcp: FastMCP):
             return response.get("result")
         except Exception as e:
             return f"Error drawing polyface: {str(e)}"
+
+    @mcp.tool()
+    def draw_spline(
+        ctx: Context,
+        points: List[List[float]],
+        order: int,
+        fit_tolerance: float
+    ) -> int:
+        """Draw a spline in AutoCAD. Creates a spline that attempts to fit an {order} degree curve to the array of points within the tolerance {fitTolerance}.
+
+        Args:
+            ctx: The MCP context
+            points: List of vertex coordinates [[x1, y1, z1], [x2, y2, z2], ...]
+            order: The order of the spline
+            fit_tolerance: The fit tolerance of the spline
+
+        Returns:
+            int: Entity handle of the newly created spline
+        """
+        try:
+            autocad = get_autocad_connection()
+            response = autocad.send_command("DRAW_SPLINE", {
+                "points": points,
+                "order": order,
+                "fitTolerance": fit_tolerance
+            })  
+
+            if not response.get("success", False):
+                return f"Error drawing spline: {response.get('error', 'Unknown error')}"
+                
+            return response.get("result")
+        except Exception as e:
+            return f"Error drawing spline: {str(e)}"
+
+    @mcp.tool()
+    def draw_arc(
+        ctx: Context,
+        center: List[float],
+        radius: float,
+        start_angle: float,
+        end_angle: float
+    ) -> int:
+        """Draw an arc in AutoCAD.
+        
+        Args:
+            ctx: The MCP context
+            center: The center point coordinates [x, y, z]
+            radius: The radius of the arc (in radians)
+            start_angle: The start angle of the arc (in radians)
+            end_angle: The end angle of the arc (in radians)
+
+        Returns:
+            int: Entity handle of the newly created arc
+        """
+        try:
+            autocad = get_autocad_connection()
+            response = autocad.send_command("DRAW_ARC", {
+                "center": center,
+                "radius": radius,
+                "startAngle": start_angle,
+                "endAngle": end_angle
+            })
+
+            if not response.get("success", False):
+                return f"Error drawing arc: {response.get('error', 'Unknown error')}"
+                
+            return response.get("result")
+        except Exception as e:
+            return f"Error drawing arc: {str(e)}"

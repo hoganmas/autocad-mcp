@@ -70,34 +70,40 @@ def register_curve_editing_tools(mcp: FastMCP):
             return f"Error creating regions: {str(e)}"
 
     @mcp.tool()
-    def extrude_region(
+    def extrude_regions(
         ctx: Context,
-        entity_handle: int,
-        distance: float
-    ) -> Dict[str, Any]:
+        entity_handles: List[int],
+        distances: List[float]
+    ) -> List[Dict[str, Any]]:
         """Extrude a region in AutoCAD.
 
         Args:
             ctx: The MCP context
-            entity_handle: The handle of the entity to extrude
-            distance: The extrusion distance
+            entity_handles: The handles of the regions to extrude
+            distances: The extrusion distances for each region
 
         Requires:
-            distance > 0
+            len(entity_handles) == len(distances)
+            distances must be a list of positive numbers
 
         Returns:
-            Dict[str, Any]: Dictionary containing the handle, type, and properties of the newly created extruded solid
+            List[Dict[str, Any]]: List of dictionaries containing the handle, type, and properties of the newly created extruded solids
         """
         try:
             autocad = get_autocad_connection()
-            response = autocad.send_command("EXTRUDE_REGION", {
-                "entityId": entity_handle,
-                "distance": distance
+            response = autocad.send_command("EXTRUDE_REGIONS", {
+                "entityIds": entity_handles,
+                "entityParameters": [
+                    {
+                        "distance": distance
+                    }
+                    for distance in distances
+                ]
             })
 
             if not response.get("success", False):
-                return f"Error extruding region: {response.get('error', 'Unknown error')}"
+                return f"Error extruding regions: {response.get('error', 'Unknown error')}"
                 
             return response.get("result")
         except Exception as e:
-            return f"Error extruding region: {str(e)}"
+            return f"Error extruding regions: {str(e)}"
