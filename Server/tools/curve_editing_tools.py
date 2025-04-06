@@ -108,3 +108,42 @@ def register_curve_editing_tools(mcp: FastMCP):
             return response.get("result")
         except Exception as e:
             return f"Error extruding regions: {str(e)}"
+
+    @mcp.tool()
+    def combine_regions(
+        ctx: Context,
+        entity_handles: List[int],
+        operation_type: str
+    ) -> Dict[str, Any]:
+        """Applies a boolean operation to the regions to create a new region. This deletes the input regions.
+
+        Args:
+            ctx: The MCP context
+            entity_handles: The handles of the regions to combine
+            operation_type: The type of operation to perform. Must be one of "union", "intersection", or "difference" (case-insensitive).
+
+        Requires:
+            len(entity_handles) > 0
+            entity_handles must represent a set of regions. This will not work for other entity types.
+            operation_type must be one of "union", "intersection", or "difference" (case-insensitive).
+
+        Returns:
+            Dict[str, Any]: Dictionary containing the handle, type, and properties of the newly created combined region
+
+            For a union operation, the result will be the set union of the input regions.
+            For an intersection operation, the result will be the set intersection of the input regions.
+            For a difference operation, the result will be the set difference of the first region and the union of all subsequent regions.
+        """
+        try:
+            autocad = get_autocad_connection()
+            response = autocad.send_command("COMBINE_REGIONS", {
+                "entityIds": entity_handles,
+                "operationType": operation_type.lower()
+            })
+
+            if not response.get("success", False):
+                return f"Error combining regions: {response.get('error', 'Unknown error')}"
+                
+            return response.get("result")
+        except Exception as e:
+            return f"Error combining regions: {str(e)}"

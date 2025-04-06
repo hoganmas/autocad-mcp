@@ -132,5 +132,59 @@ namespace AutoCADMCP.Commands
                 (isSuccess) => isSuccess ? "Regions extruded successfully!" : "Failed to extrude regions!"
             );
         }
+
+        [MCPCommand("COMBINE_REGIONS")]
+        public static object CombineRegions(JObject parameters)
+        {
+            return CommandTemplates.ModifyEntities(parameters,
+                (entities, btr, trans, parameters) => {
+                    var operationName = parameters["operationType"].Value<string>();
+
+                    BooleanOperationType operationType;
+
+                    if (operationName == "union")
+                    {
+                        operationType = BooleanOperationType.BoolUnite;
+                    }
+                    else if (operationName == "intersection")
+                    {
+                        operationType = BooleanOperationType.BoolIntersect;
+                    }
+                    else if (operationName == "difference")
+                    {
+                        operationType = BooleanOperationType.BoolSubtract;
+                    }
+                    else
+                    {
+                        throw new System.Exception($"Invalid operation type: {operationName}");
+                    }
+                    
+                    var initialRegion = entities[0] as Region;
+                    if (initialRegion == null)
+                    {
+                        throw new System.Exception($"Entity {entities[0].Handle.Value} ({entities[0].GetType().Name}) is not a region!");
+                    }
+
+                    for (int i = 1; i < entities.Count; i++)
+                    {
+                        if (entities[i] is Region region)
+                        {
+                            initialRegion.BooleanOperation(operationType, region);
+                        }
+                        else
+                        {
+                            throw new System.Exception($"Entity {entities[i].Handle.Value} ({entities[i].GetType().Name}) is not a region!");
+                        }
+                    }
+
+                    return new {
+                        handle = initialRegion.Handle.Value,
+                        type = initialRegion.GetType().Name,
+                        properties = EntityCommands.GetEntityProperties(initialRegion)
+                    };
+                },
+                (isSuccess) => isSuccess ? "Regions combined successfully!" : "Failed to combine regions!"
+            );
+        }
     }
 }
