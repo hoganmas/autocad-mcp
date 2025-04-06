@@ -105,26 +105,18 @@ namespace AutoCADMCP.Commands
             return CommandTemplates.ModifyEachEntity(parameters,
                 (ent, btr, trans, parameters) => {
 
-                    Log.Info($"Extruding region {ent.Handle.Value}");
                     // Extract parameters
                     var distance = parameters["distance"].Value<double>();
 
-                    Log.Info($"Distance: {distance}");
-
                     if (ent is Region region)
                     {
-                        Log.Info($"Region: {region.Handle.Value}");
                         // Create a Solid3D from the region
                         Solid3d solid = new Solid3d();
                         solid.Extrude(region, distance, 0);
 
-                        Log.Info($"Solid: {solid.Handle.Value}");
-
                         // Add the new solid to Model Space
                         btr.AppendEntity(solid);
                         trans.AddNewlyCreatedDBObject(solid, true);
-
-                        Log.Info($"Solid added to drawing");
 
                         return new {
                             handle = solid.Handle.Value,

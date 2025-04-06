@@ -85,6 +85,7 @@ def register_curve_editing_tools(mcp: FastMCP):
         Requires:
             len(entity_handles) == len(distances)
             distances must be a list of positive numbers
+            entity_handles must represent a set of regions. This will not work for other entity types.
 
         Returns:
             List[Dict[str, Any]]: List of dictionaries containing the handle, type, and properties of the newly created extruded solids

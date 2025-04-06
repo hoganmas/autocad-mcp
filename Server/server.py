@@ -62,6 +62,7 @@ async def autocad_prompt(prompt: str) -> str:
         6. Use appropriate coordinate systems for your operations
         7. By default, x axis is to the right and y axis is up, and z axis is out of the screen. 2D entities are parallel to the xy plane.
         8. Angles are by default in radians.
+        9. Always check the requirements of a tool. For instance, if a tool specifies that it expects only region requirements as input, then make sure only entities of region type are given.
 
         ## Error Handling
 
