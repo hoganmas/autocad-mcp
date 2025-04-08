@@ -39,11 +39,11 @@ def register_curve_editing_tools(mcp: FastMCP):
             return f"Error offsetting curve: {str(e)}"
 
     @mcp.tool()
-    def create_regions(
+    def create_region(
         ctx: Context,
         entity_handles: List[int]
-    ) -> List[Dict[str, Any]]:
-        """Create a region from a list of 2D entities in AutoCAD.
+    ) -> Dict[str, Any]:
+        """Creates a region from a list of 2D entities in AutoCAD. Deletes the input entities.
 
         Args:
             ctx: The MCP context
@@ -54,20 +54,20 @@ def register_curve_editing_tools(mcp: FastMCP):
             entity_handles must represent a set of closed 2D loops
 
         Returns:
-            List[Dict[str, Any]]: List of dictionaries containing the handle, type, and properties of the created regions
+            Dict[str, Any]: Dictionary containing the handle, type, and properties of the created region
         """
         try:
             autocad = get_autocad_connection()
-            response = autocad.send_command("CREATE_REGIONS", {
+            response = autocad.send_command("CREATE_REGION", {
                 "entityIds": entity_handles
             })
 
             if not response.get("success", False):
-                return f"Error creating regions: {response.get('error', 'Unknown error')}"
+                return f"Error creating region: {response.get('error', 'Unknown error')}"
                 
             return response.get("result")
         except Exception as e:
-            return f"Error creating regions: {str(e)}"
+            return f"Error creating region: {str(e)}"
 
     @mcp.tool()
     def extrude_regions(

@@ -50,8 +50,8 @@ namespace AutoCADMCP.Commands
             );
         }
 
-        [MCPCommand("CREATE_REGIONS")]
-        public static object CreateRegions(JObject parameters)
+        [MCPCommand("CREATE_REGION")]
+        public static object CreateRegion(JObject parameters)
         {
             return CommandTemplates.ModifyEntities(parameters,
                 (entities, btr, trans, parameters) => {
@@ -76,23 +76,26 @@ namespace AutoCADMCP.Commands
                             throw new System.Exception("Failed to create region.");
                         }
 
-                        var regionInfos = new List<object>();
-
-                        Log.Info($"Created {regionCollection.Count} regions");
-
-                        foreach (Region region in regionCollection)
+                        else if (regionCollection.Count > 1)
                         {
-                            btr.AppendEntity(region);
-                            trans.AddNewlyCreatedDBObject(region, true);
-
-                            regionInfos.Add(new {
-                                handle = region.Handle.Value,
-                                type = region.GetType().Name,
-                                properties = EntityCommands.GetEntityProperties(region)
-                            });
+                            throw new System.Exception("Multiple regions were created from the input curves. Please ensure the input curves form a single closed loop.");
                         }
 
-                        return regionInfos;
+                        Region region = regionCollection[0] as Region;
+
+                        btr.AppendEntity(region);
+                        trans.AddNewlyCreatedDBObject(region, true);
+
+                        foreach (Curve curve in curves)
+                        {
+                            curve.Erase();
+                        }
+
+                        return new {
+                            handle = region.Handle.Value,
+                            type = region.GetType().Name,
+                            properties = EntityCommands.GetEntityProperties(region)
+                        };
                     }
                 },
                 (isSuccess) => isSuccess ? "Region created successfully!" : "Failed to create region!"
